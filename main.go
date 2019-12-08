@@ -15,6 +15,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -49,7 +50,7 @@ func main() {
 
 	gh := pkg.NewGitHub(*token, *timeout)
 
-	i, err := gh.GetIssue(event.ProjectCard.GetContentURL())
+	i, err := gh.GetIssue(context.Background(), event.ProjectCard.GetContentURL())
 	if err != nil {
 		log.Fatal(err)
 	}

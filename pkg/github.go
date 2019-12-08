@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 )
 
 // GitHub is a small wrapper on top of the GitHub API to make it easier to run
@@ -37,27 +36,22 @@ type GitHub struct {
 // NewGitHub creates a new GitHub wrapper that authenticates to the API using the given token and performs
 // all requests using the configured timeout.
 func NewGitHub(token string, timeout time.Duration) GitHub {
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	oc := oauth2.NewClient(context.Background(), ts)
-
 	return GitHub{
 		token:   token,
 		timeout: timeout,
-		client:  github.NewClient(oc),
+		client:  github.NewClient(&http.Client{Timeout: timeout}),
 	}
 }
 
 // GetIssue gets a GitHub issue given its URL
-func (g GitHub) GetIssue(url string) (*github.Issue, error) {
+func (g GitHub) GetIssue(ctx context.Context, url string) (*github.Issue, error) {
 	log.Printf("getting issue %q\n", url)
 
 	req, err := g.client.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating get issue request: %w", err)
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), g.timeout)
-	defer cancel()
+	req.Header.Set("Authorization", "token "+g.token)
 
 	issue := new(github.Issue)
 	if _, err = g.client.Do(ctx, req, issue); err != nil {
