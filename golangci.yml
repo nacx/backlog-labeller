@@ -1,0 +1,34 @@
+linters:
+  enable:
+    - deadcode
+    - errcheck
+    - goconst
+    - golint
+    - ineffassign
+    - lll
+    - maligned
+    - misspell
+    - structcheck
+    - unconvert
+    - varcheck
+    - govet
+    - goimports
+    - prealloc
+    - unused
+    - staticcheck
+    - gosimple
+    - megacheck
+  disable:
+    - interfacer
+linters-settings:
+  lll:
+    line-length: 170
+  goconst:
+    min-occurrences: 4
+  govet:
+    check-shadowing: true
+run:
+  deadline: 10m
+  skip-dirs:
+    - k8s/istioapis/generated
+    - k8s/tsbapis/generated
