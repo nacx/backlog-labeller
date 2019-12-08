@@ -15,9 +15,7 @@
 FROM golang:1.13 AS builder
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -a --ldflags '-extldflags "-static"' -tags netgo -installsuffix netgo \
-    -o backlog-labeller github.com/nacx/backlog-labeller
+RUN make
 
 FROM scratch
 COPY --from=builder /app/backlog-labeller /usr/local/bin/backlog-labeller

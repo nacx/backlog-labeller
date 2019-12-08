@@ -15,19 +15,46 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 func main() {
-	event := os.Getenv("GITHUB_EVENT_PATH")
+	token := flag.String("token", "", "GitHub API token")
+	flag.Parse()
 
-	bytes, err := ioutil.ReadFile(event)
+	if *token == "" {
+		fmt.Println("missing API token")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	fmt.Printf("repo: %s\n", os.Getenv("GITHUB_REPOSITORY"))
+	fmt.Printf("user: %s\n", os.Getenv("GITHUB_ACTOR"))
+
+	bytes, err := ioutil.ReadFile(os.Getenv("GITHUB_EVENT_PATH"))
 	if err != nil {
 		fmt.Printf("error reading file: %v", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("event: %s", string(bytes))
+	var event github.ProjectCardEvent
+	if err = json.Unmarshal(bytes, &event); err != nil {
+		fmt.Printf("error unmarshalling event: %v", err)
+		os.Exit(1)
+	}
+	iss := event.ProjectCard.GetContentURL()
+
+	fmt.Printf("issue: %s\n", iss)
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *token})
+	oc := oauth2.NewClient(context.Background(), ts)
+	_ = github.NewClient(oc)
 }

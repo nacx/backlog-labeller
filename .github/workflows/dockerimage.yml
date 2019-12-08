@@ -1,9 +1,11 @@
 name: Backlog Labeller
 
-on: [issues, project_card]
+on: [project_card]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: nacx/backlog-labeller@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
