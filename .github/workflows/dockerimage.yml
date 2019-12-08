@@ -1,6 +1,6 @@
 name: Backlog Labeller
 
-on: [issues]
+on: [issues, project]
 
 jobs:
   build:
