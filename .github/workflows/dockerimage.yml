@@ -1,0 +1,9 @@
+name: Backlog Labeller
+
+on: [issues]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: nacx/backlog-labeller
