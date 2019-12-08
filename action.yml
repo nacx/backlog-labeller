@@ -1,12 +1,12 @@
-name: 'Backlog Labeller'
-description: 'Automatically manages the backlog label for issues'
+name: Backlog Labeller
+description: Automatically manages the backlog label for issues
 inputs:
-  token:  # id of input
-    description: 'GitHub API token'
+  token:
+    description: GitHub API token
     required: true
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: docker
+  image: nacx/backlog-labeller:3e97d5f0f5939637eddce2af863a24a46d0fc54d
   args:
     - '-token'
     - ${{ inputs.token }}
