@@ -14,9 +14,13 @@
 
 FROM golang:1.13 AS builder
 WORKDIR /app
+# Cache dependencies when go.mod does not change
+COPY go.mod go.sum ./
+RUN go mod download
+# Copy the remaining files and build
 COPY . .
 RUN make
 
 FROM scratch
-COPY --from=builder /app/backlog-labeller /usr/local/bin/backlog-labeller
+COPY --from=builder /app/build/backlog-labeller /usr/local/bin/backlog-labeller
 ENTRYPOINT ["/usr/local/bin/backlog-labeller"]
