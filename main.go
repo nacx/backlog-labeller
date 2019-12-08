@@ -14,8 +14,20 @@
 
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+)
 
 func main() {
-	fmt.Println("Running!")
+	event := os.Getenv("GITHUB_EVENT_PATH")
+
+	bytes, err := ioutil.ReadFile(event)
+	if err != nil {
+		fmt.Printf("error reading file: %v", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("event: %s", string(bytes))
 }
