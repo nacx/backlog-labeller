@@ -6,7 +6,7 @@ inputs:
     required: true
 runs:
   using: docker
-  image: docker://docker.io/nacx/backlog-labeller:1.0
+  image: docker://docker.io/nacx/backlog-labeller:56908b1f6217665c356cb00d2061d84b0b2d7ae4
   args:
     - '-token'
     - ${{ inputs.token }}

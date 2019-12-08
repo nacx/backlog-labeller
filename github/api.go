@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package pkg provides common objects used by the backlog labeller
-package pkg
+// Package github provides a wrapper on the GitHub API to make it easier to
+// make HTTP calls when the entire URI of the resources is known in advance.
+package github
 
 import (
 	"context"
@@ -33,13 +34,16 @@ type GitHub struct {
 	client  *github.Client
 }
 
-// NewGitHub creates a new GitHub wrapper that authenticates to the API using the given token and performs
+// New creates a new GitHub wrapper that authenticates to the API using the given token and performs
 // all requests using the configured timeout.
-func NewGitHub(token string, timeout time.Duration) GitHub {
+func New(token string, timeout time.Duration) GitHub {
 	return GitHub{
 		token:   token,
 		timeout: timeout,
-		client:  github.NewClient(&http.Client{Timeout: timeout}),
+		client: github.NewClient(&http.Client{
+			Timeout:   timeout,
+			Transport: Token(token),
+		}),
 	}
 }
 
@@ -51,7 +55,6 @@ func (g GitHub) GetIssue(ctx context.Context, url string) (*github.Issue, error)
 	if err != nil {
 		return nil, fmt.Errorf("error creating get issue request: %w", err)
 	}
-	req.Header.Set("Authorization", "token "+g.token)
 
 	issue := new(github.Issue)
 	if _, err = g.client.Do(ctx, req, issue); err != nil {

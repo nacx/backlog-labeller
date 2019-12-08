@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM alpine:latest as certs
+RUN apk --update add ca-certificates
+
 FROM scratch
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY build/backlog-labeller /usr/local/bin/backlog-labeller
 ENTRYPOINT ["/usr/local/bin/backlog-labeller"]
