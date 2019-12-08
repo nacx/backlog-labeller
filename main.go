@@ -15,19 +15,25 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"time"
 
 	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
+
+	"github.com/nacx/backlog-labeller/pkg"
 )
+
+// DefaultTimeout is the default timeout used in HitHub API calls
+const DefaultTimeout = 30 * time.Second
 
 func main() {
 	token := flag.String("token", "", "GitHub API token")
+	timeout := flag.Duration("default-timeout", DefaultTimeout, "Default timeout for the GitHub API calls")
 	flag.Parse()
 
 	if *token == "" {
@@ -36,25 +42,35 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("repo: %s\n", os.Getenv("GITHUB_REPOSITORY"))
-	fmt.Printf("user: %s\n", os.Getenv("GITHUB_ACTOR"))
-
-	bytes, err := ioutil.ReadFile(os.Getenv("GITHUB_EVENT_PATH"))
+	event, err := readProjectEvent()
 	if err != nil {
-		fmt.Printf("error reading file: %v", err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+
+	gh := pkg.NewGitHub(*token, *timeout)
+
+	i, err := gh.GetIssue(event.ProjectCard.GetContentURL())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("issue: #%d (%s)\n", i.GetID(), i.GetTitle())
+	fmt.Printf("details: %+v", i)
+}
+
+func readProjectEvent() (github.ProjectCardEvent, error) {
+	ef := os.Getenv("GITHUB_EVENT_PATH")
+	log.Printf("reading event from %q\n", ef)
 
 	var event github.ProjectCardEvent
-	if err = json.Unmarshal(bytes, &event); err != nil {
-		fmt.Printf("error unmarshalling event: %v", err)
-		os.Exit(1)
+	bytes, err := ioutil.ReadFile(ef)
+	if err != nil {
+		return event, fmt.Errorf("error reading event file %q: %w", ef, err)
 	}
-	iss := event.ProjectCard.GetContentURL()
 
-	fmt.Printf("issue: %s\n", iss)
+	if err = json.Unmarshal(bytes, &event); err != nil {
+		return event, fmt.Errorf("error unmarshalling event: %w", err)
+	}
 
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *token})
-	oc := oauth2.NewClient(context.Background(), ts)
-	_ = github.NewClient(oc)
+	return event, nil
 }
