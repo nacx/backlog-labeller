@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Make sure we pick up any local overrides.
+-include .makerc
+
 NAME := backlog-labeller
 BIN := build/$(NAME)
 
-HUB ?= nacx
+HUB ?= docker.io/nacx
 TAG ?= $(shell git rev-parse HEAD)
 
 

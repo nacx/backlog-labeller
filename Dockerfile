@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.13 AS builder
-WORKDIR /app
-# Cache dependencies when go.mod does not change
-COPY go.mod go.sum ./
-RUN go mod download
-# Copy the remaining files and build
-COPY . .
-RUN make
-
 FROM scratch
-COPY --from=builder /app/build/backlog-labeller /usr/local/bin/backlog-labeller
+COPY build/backlog-labeller /usr/local/bin/backlog-labeller
 ENTRYPOINT ["/usr/local/bin/backlog-labeller"]
